@@ -9,19 +9,16 @@ namespace SiteAmbipar.Controllers
 
     public class ClienteController : Controller
     {
-        
-    private readonly IHttpClientFactory _httpClientFactory;
+        private readonly HttpClient _httpClient;
 
-        public ClienteController(IHttpClientFactory httpClientFactory)
+        public ClienteController(IHttpClientFactory factory)
         {
-            _httpClientFactory = httpClientFactory;
+            _httpClient = factory.CreateClient("ApiClient");
         }
-
         // Método para listar clientes
         public async Task<IActionResult> Index(string search = null)
         {
-            var client = _httpClientFactory.CreateClient("ApiClient");
-            var response = await client.GetAsync($"Clientes?search={search ?? ""}");
+            var response = await _httpClient.GetAsync($"Clientes?search={search ?? ""}");
 
             if (!response.IsSuccessStatusCode)
             {
@@ -40,11 +37,12 @@ namespace SiteAmbipar.Controllers
         // GET: ClienteController/Details/5
         public ActionResult Details(int id)
         {
+
             return View();
         }
 
         // GET: ClienteController/Create
-        public ActionResult Create()
+        public async Task<ActionResult> Create()
         {
             return View();
         }
@@ -52,10 +50,11 @@ namespace SiteAmbipar.Controllers
         // POST: ClienteController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult> Create(Cliente cliente)
         {
             try
             {
+                await _httpClient.PostAsJsonAsync("Clientes", cliente);
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -67,6 +66,14 @@ namespace SiteAmbipar.Controllers
         // GET: ClienteController/Edit/5
         public ActionResult Edit(int id)
         {
+            try
+            {
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View();
+            }
             return View();
         }
 
